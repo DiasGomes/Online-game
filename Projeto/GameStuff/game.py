@@ -43,20 +43,13 @@ class Game:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_RIGHT]:
-            if self.player.x + self.player.size + self.player.speed < map.MAP_WIDTH:
-                self.player.update(0)
-
+            self.player.update(0)
         if keys[pygame.K_LEFT]:
-            if self.player.x >= self.player.speed:
-                self.player.update(1)
-
+            self.player.update(1)
         if keys[pygame.K_UP]:
-            if self.player.y >= self.player.speed:
-                self.player.update(2)
-
+            self.player.update(2)
         if keys[pygame.K_DOWN]:
-            if self.player.y + self.player.size + self.player.speed < map.MAP_HEIGHT:
-                self.player.update(3)
+            self.player.update(3)
         
         # atualiza informações para o servidor
         server_data = json.loads(self.update_server())
@@ -80,7 +73,8 @@ class Game:
         self.player.render(self.screen, self.camera_x, self.camera_y)
         # desenha todos os jogadores
         for _, _other in self.others.items():
-            pygame.draw.rect(self.screen, (255, 0, 0) ,(_other['x'] - self.camera_x, _other['y'] - self.camera_y, SIZE, SIZE), 0)
+            pos = (_other['x'] - self.camera_x, _other['y'] - self.camera_y, map.CELL_SIZE, map.CELL_SIZE)
+            pygame.draw.rect(self.screen, (255, 0, 0) , pos, 0)
         # atualiza display
         pygame.display.update()
     
