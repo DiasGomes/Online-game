@@ -21,6 +21,7 @@ class Game:
         self.player = player(self.conection.player_position, map.CELL_SIZE)
         self.camera_x = self.player.x + (self.player.size / 2) - (SCREEN_WIDTH / 2)
         self.camera_y = self.player.y + (self.player.size / 2) - (SCREEN_HEIGHT / 2)
+        self.mouse_x, self.mouse_y = (0,0)
         self.others = {}
 
     def run(self):     
@@ -51,6 +52,11 @@ class Game:
         if keys[pygame.K_DOWN]:
             self.player.update(3)
         
+        # mouse info
+        self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
+        atirou = pygame.mouse.get_pressed(num_buttons=3)
+        if atirou[0]:
+            print("ATIROU")
         # atualiza informações para o servidor
         server_data = json.loads(self.update_server())
         
@@ -75,6 +81,10 @@ class Game:
         for _, _other in self.others.items():
             pos = (_other['x'] - self.camera_x, _other['y'] - self.camera_y, map.CELL_SIZE, map.CELL_SIZE)
             pygame.draw.rect(self.screen, (255, 0, 0) , pos, 0)
+            
+        # draw mouse
+        pygame.draw.rect(self.screen, (0, 0, 255) , (self.mouse_x, self.mouse_y, 5, 5), 0)
+        
         # atualiza display
         pygame.display.update()
     
