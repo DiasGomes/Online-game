@@ -3,13 +3,16 @@ import sys
 import json
 from client import client
 from GameStuff.player import player
+from GameStuff.bullet import bullet_
 import GameStuff.map as map
+
 
 
 NOME_JOGO = "Nome do jogo"
 FPS = 60
 SCREEN_WIDTH = map.CELL_SIZE * 16
 SCREEN_HEIGHT = map.CELL_SIZE * 16
+CENTER = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
 
 class Game:
 
@@ -23,6 +26,7 @@ class Game:
         self.camera_y = self.player.y + (self.player.size / 2) - (SCREEN_HEIGHT / 2)
         self.mouse_x, self.mouse_y = (0,0)
         self.others = {}
+        self.my_bullets = []
 
     def run(self):     
         clock = pygame.time.Clock()
@@ -44,19 +48,24 @@ class Game:
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_RIGHT]:
-            self.player.update(0)
+            self.player.move(0)
         if keys[pygame.K_LEFT]:
-            self.player.update(1)
+            self.player.move(1)
         if keys[pygame.K_UP]:
-            self.player.update(2)
+            self.player.move(2)
         if keys[pygame.K_DOWN]:
-            self.player.update(3)
+            self.player.move(3)
+        self.player.update()
         
         # mouse info
         self.mouse_x, self.mouse_y = pygame.mouse.get_pos()
         atirou = pygame.mouse.get_pressed(num_buttons=3)
-        if atirou[0]:
-            print("ATIROU")
+        
+        # dispara 
+        if atirou[0] and not self.player.shoot:
+            self.player.shoot = True
+            self.my_bullets.append(self.new_bullet())
+            
         # atualiza informações para o servidor
         server_data = json.loads(self.update_server())
         
@@ -66,6 +75,12 @@ class Game:
                 lst_pos = data.split(":")
                 self.others[key] = {'x': int(lst_pos[0]), 'y': int(lst_pos[1])}
                 
+        # 
+        for bullet in self.my_bullets:
+            bullet.update()
+            if bullet.destroy:
+                self.my_bullets.remove(bullet)
+        print(len(self.my_bullets))
         # atualiza camera:
         self.camera_x = self.player.x + (self.player.size / 2) - (SCREEN_WIDTH / 2)
         self.camera_y = self.player.y + (self.player.size / 2) - (SCREEN_HEIGHT / 2)
@@ -81,10 +96,13 @@ class Game:
         for _, _other in self.others.items():
             pos = (_other['x'] - self.camera_x, _other['y'] - self.camera_y, map.CELL_SIZE, map.CELL_SIZE)
             pygame.draw.rect(self.screen, (255, 0, 0) , pos, 0)
-            
-        # draw mouse
-        pygame.draw.rect(self.screen, (0, 0, 255) , (self.mouse_x, self.mouse_y, 5, 5), 0)
         
+        # desenha bullets  
+        for bullet in self.my_bullets:
+            bullet.render(self.screen, self.camera_x, self.camera_y)
+        
+        pygame.draw.rect(self.screen, (120, 120, 255) , (CENTER[0], CENTER[1], 5, 5), 0)
+
         # atualiza display
         pygame.display.update()
     
@@ -95,6 +113,12 @@ class Game:
         render = font.render(text, 1, (0,0,0))
         self.screen.draw(render, (x,y))
         
+    def new_bullet(self):
+        position = (self.player.x + map.CELL_SIZE/2, self.player.y + map.CELL_SIZE/2)
+        dir_vetor = pygame.math.Vector2(self.mouse_x - CENTER[0], self.mouse_y - CENTER[1])
+        direction = pygame.math.Vector2.normalize(dir_vetor)
+        return bullet_(position, direction)
+    
     # manda informações para o servidor
     def update_server(self):
         _data = str(self.player.x) + ":" + str(self.player.y)
