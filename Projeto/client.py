@@ -1,20 +1,18 @@
 import socket
+import json
 
 class client():
 
-    def __init__(self, _ip_host, _port=5555):
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.host = _ip_host 
-        self.port = _port
-        self.addr = (self.host, self.port)
+    def __init__(self, _username, _ip_host, _port=5555):
+        # UDP socket
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.username = _username
+        self.addr = (_ip_host, _port)
         self.id, self.player_position = self.connect()
 
-    # conecta com o servidor
-    def connect(self):
-        # recebe parametros iniciais do servidor
-        self.client.connect(self.addr)
-        response = self.client.recv(2048).decode()
-        
+    def connect(self):  
+        response = self.send_and_recv("try connect")
+    
         # trata a informação
         msg = response.split(";")
         _id = msg[0]
@@ -22,17 +20,26 @@ class client():
         print(f"Client {_id} connected.\n Position: {_player_position}")
         
         return _id, _player_position 
+    
+    def send_and_recv(self, data: str)-> str:
+        self.send_udp(data)
+        return self.recv_udp()
+    
+    def send_udp(self, data: str):
+        msg = {
+            "user": self.username,
+            "message": data,
+        }
+        message = str.encode(json.dumps(msg))
+        self.client.sendto(message, self.addr)
 
-    # envia e recebe dados do servidor
-    def send_and_recv(self, data: str) -> str:
-        try:
-            self.client.send(str.encode(data))
-            reply = self.client.recv(2048).decode()
-            return reply
+    def recv_udp(self) -> str:
+        try:           
+            reply, origin = self.client.recvfrom(2048)
+            return reply.decode()
         except socket.error as e:
             return str(e)
         
-    # fecha conexão com o servidor
     def close(self):
         self.client.close()
         print(f"Connection close!")

@@ -6,69 +6,57 @@ import json
 # parametros
 server = ""
 port = 5555
-number_of_players = 0
-number_of_connections = 10
 HEADER_LENGHT = 2048
+data = {}
 lst_position = [
     (64,64), (100, 64), (200, 64), (400, 64), (64, 400), 
     (100, 400), (200, 400), (400, 400), (64, 200), (400, 200)
 ]
-data = {}
 
-# parametros por linha de comando [ip, porta e numero de conexoes]
+# parametros por linha de comando [ip, porta]
 if len(sys.argv) > 1:
     server = sys.argv[1]
     if len(sys.argv) > 2:
         port = sys.argv[2]
-        if len(sys.argv) > 3:
-            number_of_connections = sys.argv[3]
 
-# cria socket para escutar
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-try:
-    server_socket.bind((server, port))
-except socket.error as e:
-    print(str(e))
-
-server_socket.listen(number_of_connections)
 print("Waiting for a connection")
 
-# controla o chat entre clientes e o servidor  
-def chat(conn, addr):
-    global currentId
-    id = str(addr[0]) + ":" + str(addr[1])
-    x, y = lst_position[number_of_players]
-    msg = id + ";" + str(x) + ";" + str(y)
-    # envia o id para o proprio cliente
-    conn.send(str.encode(str(msg)))
-    print(f"Connected to: {id}")
+# fica escutando
+while True:   
+    # cria socket UDP
+    server_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    while True:
-        try:
-            msg_recv = conn.recv(2048).decode('utf-8')
-            print(f"client {id}: {msg_recv}")
-            if msg_recv == "quit":
-                # remove cliente da conexão
-                print(f"Server: Goodbye {id}")
-                conn.send(str.encode(json.dumps({'Server': f'Goodbye {id}'})))
-                del data[id]
-                break
-            else:
-                data[id] = msg_recv
-            # reenvia a msg para todos
-            conn.sendall(str.encode(json.dumps(data)))
-        except Exception as e:
-            print("ERRO: ", e)
-            break
-
-    print("Connection Closed")
-    conn.close()
-
-# espera novas conexoes de clientes
-while True:
-    conn, addr = server_socket.accept()
-    #number_of_players += 1
-    # nova thread para novo cliente
-    start_new_thread(chat, (conn, addr))    
+    try:
+        server_udp_socket.bind((server, port))
+    except socket.error as e:
+        print(str(e))
+    
+    # fica escutando
+    b_response, addr = server_udp_socket.recvfrom(2048)
+    str_response = b_response.decode('utf-8')
+    msg_recv = json.loads(str_response)
+    id = str(addr[0]) + "-" + str(addr[1])
+    
+    # se não existe adiciona nos dados
+    if id not in data:
+        x, y = lst_position[len(data)]
+        msg =  str(x) + ";" + str(y)
+        server_udp_socket.sendto(str.encode(id + ";" + msg), addr)
+        msg_recv['message'] = msg
+    
+    try:
+        print(f"client {id}: {msg_recv}")
+        data[id] = msg_recv
+        if msg_recv['message'] == "quit":
+            # remove cliente da conexão
+            print(f"Server: Goodbye {id}")
+            server_udp_socket.sendto(str.encode(json.dumps({'Server': f'Goodbye {id}'})), addr)
+            del data[id]
+        # reenvia a msg para todos
+        else:
+            data_to_send = str.encode(json.dumps(data))
+            server_udp_socket.sendto(data_to_send, addr)
+    except Exception as e:
+        print("ERRO: ", e)
+        break
     

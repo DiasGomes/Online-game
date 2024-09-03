@@ -3,8 +3,9 @@ import GameStuff.map as map
 
 class player:
     
-    def __init__(self, _position, _size):
+    def __init__(self, _position, _size, _name):
         self.x, self.y = _position
+        self.name = _name
         self.size = _size
         self.speed = 2
         self.shoot = False
@@ -48,4 +49,9 @@ class player:
     
     def render(self, g, cx, cy):
         pygame.draw.rect(g, self.color ,(self.x - cx, self.y - cy, self.size, self.size), 0)
+        # desenha nome
+        pygame.font.init()
+        font = pygame.font.SysFont("comicsans", 5)                 
+        render_font = font.render(self.name, 1, (0,0,0))
+        g.blit(render_font, (self.x - cx, self.y + self.size + 2 - cy))
         
