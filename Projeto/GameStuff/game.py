@@ -1,4 +1,5 @@
 import pygame
+import ast
 import sys
 import json
 from client import client
@@ -9,8 +10,8 @@ import GameStuff.map as map
 
 
 NOME_JOGO = "Nome do jogo"
-FPS = 60
-FONT_SIZE = 5
+FPS = 30
+FONT_SIZE = 10
 SCREEN_WIDTH = map.CELL_SIZE * 16
 SCREEN_HEIGHT = map.CELL_SIZE * 16
 CENTER = (SCREEN_WIDTH//2, SCREEN_HEIGHT//2)
@@ -28,6 +29,7 @@ class Game:
         self.mouse_x, self.mouse_y = (0,0)
         self.others = {}
         self.my_bullets = []
+        self.all_bullets = []
 
     def run(self):     
         clock = pygame.time.Clock()
@@ -66,17 +68,24 @@ class Game:
         if atirou[0] and not self.player.shoot:
             self.player.shoot = True
             self.my_bullets.append(self.new_bullet())
+           
+        self.all_bullets = self.my_bullets
             
         # atualiza informações para o servidor
         try:
             server_data = json.loads(self.update_server())
-        except:
+        except Exception as e:
+            print("ERRO: ", e)
             self.erro_conection()
-        # atualiza informações dos outros playes para o jogador
+            
+        # atualiza informações dos outros players para o jogador
         for key, data in server_data.items():
             if (key != self.conection.id) and (data != ''):
                 lst_pos = data['message'].split(";")
                 self.others[key] = {'user':data['user'], 'x': int(lst_pos[0]), 'y': int(lst_pos[1])}
+                others_bullets = ast.literal_eval(lst_pos[2])
+                for _bullet in others_bullets:
+                    self.all_bullets.append(bullet_(_bullet))
                 
         # 
         for bullet in self.my_bullets:
@@ -97,16 +106,18 @@ class Game:
         self.player.render(self.screen, self.camera_x, self.camera_y)
         # desenha todos os jogadores
         for _, _other in self.others.items():
-            pos = (_other['x'] - self.camera_x, _other['y'] - self.camera_y, map.CELL_SIZE, map.CELL_SIZE)
+            xx = _other['x'] - self.camera_x
+            yy = _other['y'] - self.camera_y
+            pos = (xx, yy, map.CELL_SIZE, map.CELL_SIZE)
             pygame.draw.rect(self.screen, (255, 0, 0) , pos, 0)
-            self.draw_text(_other['user'], _other['x'] - self.camera_x, _other['y'] - self.camera_y)
+            self.draw_text(_other['user'], xx + map.CELL_SIZE, yy + map.CELL_SIZE) 
         
         # desenha bullets  
-        for bullet in self.my_bullets:
+        for bullet in self.all_bullets:
             bullet.render(self.screen, self.camera_x, self.camera_y)
+        # esvazia buffer
+        self.all_bullets = []
         
-        pygame.draw.rect(self.screen, (120, 120, 255) , (CENTER[0], CENTER[1], 5, 5), 0)
-
         # atualiza display
         pygame.display.update()
     
@@ -125,7 +136,10 @@ class Game:
     
     # manda informações para o servidor
     def update_server(self):
-        _data = str(self.player.x) + ";" + str(self.player.y)
+        bullets = []
+        for bullet in self.my_bullets:
+            bullets.append((bullet.x, bullet.y))
+        _data = str(self.player.x) + ";" + str(self.player.y) + ";" + str(bullets)
         return self.conection.send_and_recv(_data)
     
     # fecha a conexao com o servidor
@@ -136,7 +150,6 @@ class Game:
         sys.exit()
         
     def erro_conection(self):
-        self.conection.send_and_recv("quit")
         self.conection.close()
         sys.exit()
     

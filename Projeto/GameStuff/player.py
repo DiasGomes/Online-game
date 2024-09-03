@@ -47,11 +47,11 @@ class player:
                 self.cooldown_count = 0
                 self.shoot = False
     
-    def render(self, g, cx, cy):
+    def render(self, g, cx, cy, font_size=10):
         pygame.draw.rect(g, self.color ,(self.x - cx, self.y - cy, self.size, self.size), 0)
         # desenha nome
         pygame.font.init()
-        font = pygame.font.SysFont("comicsans", 5)                 
+        font = pygame.font.SysFont("comicsans", font_size)                 
         render_font = font.render(self.name, 1, (0,0,0))
         g.blit(render_font, (self.x - cx, self.y + self.size + 2 - cy))
         

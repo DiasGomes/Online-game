@@ -3,8 +3,9 @@ import GameStuff.map as map
 
 class bullet_:
     
-    def __init__(self, _position, _diretion):
-        self.x, self.y = _position
+    def __init__(self, _position, _diretion = (0,0)):
+        self.x = int(_position[0])
+        self.y = int(_position[1])
         self.direction = _diretion
         self.size = 6
         self.speed = 5
@@ -12,8 +13,8 @@ class bullet_:
         self.color = (0, 0, 255)
         
     def update(self):
-        self.x += (self.speed * self.direction[0])
-        self.y += (self.speed * self.direction[1])
+        self.x += int(self.speed * self.direction[0])
+        self.y += int(self.speed * self.direction[1])
         
         x = int( (self.x + (self.size // 2)) // map.CELL_SIZE)
         y = int( (self.y + (self.size // 2)) // map.CELL_SIZE)

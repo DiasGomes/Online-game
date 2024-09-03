@@ -40,7 +40,7 @@ while True:
     # se não existe adiciona nos dados
     if id not in data:
         x, y = lst_position[len(data)]
-        msg =  str(x) + ";" + str(y)
+        msg =  str(x) + ";" + str(y) + "; []" 
         server_udp_socket.sendto(str.encode(id + ";" + msg), addr)
         msg_recv['message'] = msg
     
