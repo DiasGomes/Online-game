@@ -28,7 +28,7 @@ class client():
     def send_udp(self, data: str):
         msg = {
             "user": self.username,
-            "message": data,
+            "msg": data,
         }
         message = str.encode(json.dumps(msg))
         self.client.sendto(message, self.addr)

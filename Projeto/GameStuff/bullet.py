@@ -8,7 +8,7 @@ class bullet_:
         self.y = int(_position[1])
         self.direction = _diretion
         self.size = 6
-        self.speed = 5
+        self.speed = 10
         self.destroy = False
         self.color = (0, 0, 255)
         

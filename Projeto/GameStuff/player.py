@@ -7,7 +7,7 @@ class player:
         self.x, self.y = _position
         self.name = _name
         self.size = _size
-        self.speed = 2
+        self.speed = 4
         self.shoot = False
         self.cooldown = 30
         self.cooldown_count = 0

@@ -42,12 +42,12 @@ while True:
         x, y = lst_position[len(data)]
         msg =  str(x) + ";" + str(y) + "; []" 
         server_udp_socket.sendto(str.encode(id + ";" + msg), addr)
-        msg_recv['message'] = msg
+        msg_recv['msg'] = msg
     
     try:
         print(f"client {id}: {msg_recv}")
         data[id] = msg_recv
-        if msg_recv['message'] == "quit":
+        if msg_recv['msg'] == "quit":
             # remove cliente da conexão
             print(f"Server: Goodbye {id}")
             server_udp_socket.sendto(str.encode(json.dumps({'Server': f'Goodbye {id}'})), addr)
