@@ -84,6 +84,9 @@ class Game:
             pos = (xx, yy, map.CELL_SIZE, map.CELL_SIZE)
             pygame.draw.rect(self.screen, (255, 0, 0) , pos, 0)
             self.draw_text(_other['user'], xx + map.CELL_SIZE, yy + map.CELL_SIZE) 
+        
+        # esvazia buffer
+        self.others = {}
             
     def draw_bullets(self):
         for bullet in self.my_bullets:
@@ -107,7 +110,12 @@ class Game:
                 self.others[key] = {'user':data['user'], 'x': int(lst_pos[0]), 'y': int(lst_pos[1])}
                 others_bullets = ast.literal_eval(lst_pos[2])
                 for _bullet in others_bullets:
-                    self.other_bullets.append(bullet_(_bullet))
+                    b_obj = bullet_(_bullet)
+                    if (b_obj.x >= self.player.x) and (b_obj.x < self.player.x + self.player.size):
+                        if (b_obj.y >= self.player.y) and (b_obj.y < self.player.y + self.player.size):
+                            print("MORREU")
+                            self.close()
+                    self.other_bullets.append(b_obj)
     
     def update_server(self):
         # manda informações sobre o player
