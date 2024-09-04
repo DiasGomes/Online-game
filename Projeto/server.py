@@ -20,12 +20,11 @@ if len(sys.argv) > 1:
         port = sys.argv[2]
 
 print("Waiting for a connection")
+# cria socket UDP
+server_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 # fica escutando
 while True:   
-    # cria socket UDP
-    server_udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
     try:
         server_udp_socket.bind((server, port))
     except socket.error as e:
