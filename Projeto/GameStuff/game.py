@@ -129,13 +129,13 @@ class Game:
         # controles
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_RIGHT]:
+        if keys[pygame.K_d]:
             self.player.move(0)
-        if keys[pygame.K_LEFT]:
+        if keys[pygame.K_a]:
             self.player.move(1)
-        if keys[pygame.K_UP]:
+        if keys[pygame.K_w]:
             self.player.move(2)
-        if keys[pygame.K_DOWN]:
+        if keys[pygame.K_s]:
             self.player.move(3)
             
     def mouse(self):
