@@ -1,5 +1,6 @@
 import pygame
 import GameStuff.map as map
+from GameStuff.spritesheet import SpriteSheet
 
 class player:
     
@@ -12,6 +13,7 @@ class player:
         self.cooldown = 30
         self.cooldown_count = 0
         self.color = (0, 255, 0)
+        self.sprites = SpriteSheet(pygame.image.load("GameStuff/sprites/player.png").convert_alpha(), 32, 32, 1)
         
     def move(self, comando):
         left_x = int(self.x // map.CELL_SIZE)
@@ -49,9 +51,13 @@ class player:
     
     def render(self, g, cx, cy, font_size=10):
         pygame.draw.rect(g, self.color ,(self.x - cx, self.y - cy, self.size, self.size), 0)
+        sprite = self.sprites.get_image(2)
+        g.blit(sprite, (self.x - cx, self.y - cy))
+        
         # desenha nome
         pygame.font.init()
         font = pygame.font.SysFont("comicsans", font_size)                 
         render_font = font.render(self.name, 1, (0,0,0))
         g.blit(render_font, (self.x - cx, self.y + self.size + 2 - cy))
+        pygame.display.flip()
         

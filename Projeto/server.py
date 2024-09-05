@@ -2,6 +2,7 @@ import socket
 from _thread import *
 import sys
 import json
+import random
 
 # parametros
 server = ""
@@ -9,8 +10,8 @@ port = 5555
 HEADER_LENGHT = 2048
 data = {}
 lst_position = [
-    (64,64), (100, 64), (200, 64), (400, 64), (64, 400), 
-    (100, 400), (200, 400), (400, 400), (64, 200), (400, 200)
+    (64,64), (928, 64), (64, 928), (928, 928), (64, 320), 
+    (928, 320), (64, 640), (928, 640), (480, 64), (480, 928)
 ]
 
 # parametros por linha de comando [ip, porta]
@@ -38,7 +39,7 @@ while True:
     
     # se não existe adiciona nos dados
     if id not in data:
-        index = len(data)
+        index = random.randint(0, len(lst_position)-1)
         x, y = lst_position[index]
         msg =  str(x) + ";" + str(y) + "; []" 
         server_udp_socket.sendto(str.encode(id + ";" + msg), addr)
