@@ -6,6 +6,7 @@ from client import client
 from GameStuff.player import player
 from GameStuff.bullet import bullet_
 import GameStuff.map as map
+from GameStuff.spritesheet import SpriteSheet
 
 NOME_JOGO = "Nome do jogo"
 FPS = 30
@@ -21,7 +22,9 @@ class Game:
         pygame.display.set_caption(NOME_JOGO)
         self.conection = client(_username, _ip, _port)
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        self.player = player(self.conection.player_position, map.CELL_SIZE, _username)
+        self.spritesheets = pygame.image.load("GameStuff/sprites/player.png").convert_alpha()
+        self.sprites = SpriteSheet(self.spritesheets, 32, 32, 1)
+        self.player = player(self.conection.player_position, map.CELL_SIZE, _username, self.sprites)
         self.camera_x = self.player.x + (self.player.size / 2) - (SCREEN_WIDTH / 2)
         self.camera_y = self.player.y + (self.player.size / 2) - (SCREEN_HEIGHT / 2)
         self.mouse_x, self.mouse_y = (0,0)
@@ -82,7 +85,9 @@ class Game:
             xx = _other['x'] - self.camera_x
             yy = _other['y'] - self.camera_y
             pos = (xx, yy, map.CELL_SIZE, map.CELL_SIZE)
-            pygame.draw.rect(self.screen, (255, 0, 0) , pos, 0)
+            pygame.draw.rect(self.screen, (205, 10, 10) , pos, 0)
+            sprite = self.sprites.get_image(_other['img'])
+            self.screen.blit(sprite, (xx, yy))
             self.draw_text(_other['user'], xx + map.CELL_SIZE, yy + map.CELL_SIZE) 
         
         # esvazia buffer
@@ -107,8 +112,13 @@ class Game:
         for key, data in _server_data.items():
             if (key != self.conection.id) and (data != ''):
                 lst_pos = data['msg'].split(";")
-                self.others[key] = {'user':data['user'], 'x': int(lst_pos[0]), 'y': int(lst_pos[1])}
-                others_bullets = ast.literal_eval(lst_pos[2])
+                self.others[key] = {
+                    'user':data['user'], 
+                    'x': int(lst_pos[0]), 
+                    'y': int(lst_pos[1]),
+                    'img': int(lst_pos[2])
+                }
+                others_bullets = ast.literal_eval(lst_pos[3])
                 for _bullet in others_bullets:
                     b_obj = bullet_(_bullet)
                     if (b_obj.x >= self.player.x) and (b_obj.x < self.player.x + self.player.size):
@@ -123,7 +133,7 @@ class Game:
         _response = {}
         for bullet in self.my_bullets:
             bullets.append((bullet.x, bullet.y))
-        _data = str(self.player.x) + ";" + str(self.player.y) + ";" + str(bullets)
+        _data = str(self.player.x) + ";" + str(self.player.y) + ";" + str(self.player.sprite_index) + ";" + str(bullets)
             
         try:
             _server_data = self.conection.send_and_recv(_data)
@@ -137,10 +147,14 @@ class Game:
         # controles
         keys = pygame.key.get_pressed()
 
+        # movimento horizontal
         if keys[pygame.K_d]:
             self.player.move(0)
-        if keys[pygame.K_a]:
+        elif keys[pygame.K_a]:
             self.player.move(1)
+        else:
+            self.player.move(-1)
+            
         if keys[pygame.K_w]:
             self.player.move(2)
         if keys[pygame.K_s]:

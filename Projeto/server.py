@@ -41,7 +41,7 @@ while True:
     if id not in data:
         index = random.randint(0, len(lst_position)-1)
         x, y = lst_position[index]
-        msg =  str(x) + ";" + str(y) + "; []" 
+        msg =  str(x) + ";" + str(y) + ";2; []" 
         server_udp_socket.sendto(str.encode(id + ";" + msg), addr)
         msg_recv['msg'] = msg
     
