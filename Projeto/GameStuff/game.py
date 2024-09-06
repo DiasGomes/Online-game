@@ -69,7 +69,7 @@ class Game:
         # desenha todos os projeteis
         self.draw_bullets()
         # atualiza display
-        pygame.display.update()
+        pygame.display.flip()
     
     def draw_text(self, text, x, y, _font_type="comicsans"):
         pygame.font.init()

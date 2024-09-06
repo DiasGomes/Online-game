@@ -12,8 +12,9 @@ class player:
         self.shoot = False
         self.cooldown = 30
         self.cooldown_count = 0
-        self.color = (0, 255, 0)
-        self.sprites = SpriteSheet(pygame.image.load("GameStuff/sprites/player.png").convert_alpha(), 32, 32, 1)
+        self.color = (10, 55, 155)
+        self.spritesheets = pygame.image.load("GameStuff/sprites/player.png").convert_alpha()
+        self.sprites = SpriteSheet(self.spritesheets, 32, 32, 1)
         
     def move(self, comando):
         left_x = int(self.x // map.CELL_SIZE)
@@ -41,7 +42,7 @@ class player:
             if (map.MAP[left_x][future_y] != 0) and (map.MAP[right_x][future_y] != 0):
                 self.y += self.speed
      
-    def update(self):         
+    def update(self):      
         # controle de cooldown
         if self.shoot:
             self.cooldown_count += 1
@@ -51,7 +52,7 @@ class player:
     
     def render(self, g, cx, cy, font_size=10):
         pygame.draw.rect(g, self.color ,(self.x - cx, self.y - cy, self.size, self.size), 0)
-        sprite = self.sprites.get_image(2)
+        sprite = self.sprites.get_image(0)
         g.blit(sprite, (self.x - cx, self.y - cy))
         
         # desenha nome
@@ -59,5 +60,6 @@ class player:
         font = pygame.font.SysFont("comicsans", font_size)                 
         render_font = font.render(self.name, 1, (0,0,0))
         g.blit(render_font, (self.x - cx, self.y + self.size + 2 - cy))
-        pygame.display.flip()
+        
+
         
