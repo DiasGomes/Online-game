@@ -8,7 +8,7 @@ from GameStuff.bullet import bullet_
 import GameStuff.map as map
 from GameStuff.spritesheet import SpriteSheet
 
-NOME_JOGO = "Nome do jogo"
+NOME_JOGO = "SD GAME"
 FPS = 30
 FONT_SIZE = 10
 SCREEN_WIDTH = map.CELL_SIZE * 16
